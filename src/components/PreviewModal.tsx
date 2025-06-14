@@ -30,7 +30,10 @@ const PreviewModal = ({ resource, isOpen, onClose }: PreviewModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent 
+        className="max-w-4xl max-h-[90vh] p-0 [&>button]:hidden" 
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
@@ -49,7 +52,7 @@ const PreviewModal = ({ resource, isOpen, onClose }: PreviewModalProps) => {
               <Button variant="ghost" size="sm">
                 <Star className={`h-4 w-4 ${resource.isFavorite ? 'text-yellow-400 fill-current' : ''}`} />
               </Button>
-              <Button variant="ghost" size="sm" className="text-red-600">
+              <Button variant="ghost" size="sm" className="text-red-600" onClick={onClose}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
