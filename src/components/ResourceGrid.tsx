@@ -33,8 +33,10 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick }: ResourceGridProp
   const formatFileSize = (size: string) => size;
   const formatDate = (date: string) => new Date(date).toLocaleDateString();
 
-  const handlePreview = (resource: Resource, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handlePreview = (resource: Resource, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     setPreviewResource(resource);
     setIsPreviewOpen(true);
   };
@@ -42,6 +44,15 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick }: ResourceGridProp
   const handleClosePreview = () => {
     setIsPreviewOpen(false);
     setPreviewResource(null);
+  };
+
+  const handleResourceClick = (resource: Resource) => {
+    // Open preview for images and videos, use original handler for other types
+    if (resource.type === 'image' || resource.type === 'video') {
+      handlePreview(resource);
+    } else {
+      onResourceClick(resource);
+    }
   };
 
   if (viewMode === 'list') {
@@ -52,7 +63,7 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick }: ResourceGridProp
             <div
               key={resource.id}
               className="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
-              onClick={() => onResourceClick(resource)}
+              onClick={() => handleResourceClick(resource)}
             >
               <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
                 <img
@@ -122,7 +133,7 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick }: ResourceGridProp
           <div
             key={resource.id}
             className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-blue-300 transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
-            onClick={() => onResourceClick(resource)}
+            onClick={() => handleResourceClick(resource)}
           >
             <div className="aspect-square bg-gray-100 overflow-hidden">
               <img

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, Download, Star, Trash2 } from 'lucide-react';
+import { Download, Star, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -51,9 +51,6 @@ const PreviewModal = ({ resource, isOpen, onClose }: PreviewModalProps) => {
               </Button>
               <Button variant="ghost" size="sm" className="text-red-600">
                 <Trash2 className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
