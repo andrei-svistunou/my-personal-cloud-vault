@@ -47,11 +47,11 @@ const Index = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // Transform resources to match ResourceGrid expected format
+  // Transform resources to match ResourceGrid expected format with proper type mapping
   const transformedResources = filteredResources.map(resource => ({
     id: resource.id,
     name: resource.name,
-    type: resource.file_type,
+    type: resource.file_type as 'image' | 'video' | 'document',
     size: resource.file_size,
     date: resource.created_at,
     thumbnail: resource.thumbnail_path || '',
@@ -72,6 +72,7 @@ const Index = () => {
   };
 
   const handleUpload = async (files: File[]) => {
+    console.log('Upload started with files:', files.length);
     await uploadFiles(files);
     setIsUploadOpen(false);
     refetch();
@@ -107,7 +108,10 @@ const Index = () => {
             onViewModeChange={setViewMode}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            onUploadClick={() => setIsUploadOpen(true)}
+            onUploadClick={() => {
+              console.log('Upload button clicked');
+              setIsUploadOpen(true);
+            }}
           />
           
           <main className="flex-1 overflow-auto">
@@ -160,7 +164,10 @@ const Index = () => {
 
       <UploadZone
         isOpen={isUploadOpen}
-        onClose={() => setIsUploadOpen(false)}
+        onClose={() => {
+          console.log('Upload modal closed');
+          setIsUploadOpen(false);
+        }}
         onUpload={handleUpload}
       />
     </div>
