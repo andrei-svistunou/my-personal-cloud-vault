@@ -32,23 +32,65 @@ export const useResources = (folderId?: string) => {
 
     setLoading(true);
     try {
-      let query = supabase
-        .from('resources')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_deleted', false)
-        .order('created_at', { ascending: false });
-
+      let query;
+      
       if (folderId) {
-        query = query.eq('folder_id', folderId);
+        // Fetch resources assigned to a specific folder via resource_folders junction table
+        query = supabase
+          .from('resource_folders')
+          .select(`
+            resource_id,
+            resources!inner (
+              id,
+              name,
+              original_name,
+              file_type,
+              mime_type,
+              file_size,
+              storage_path,
+              thumbnail_path,
+              folder_id,
+              is_favorite,
+              is_deleted,
+              created_at,
+              updated_at,
+              user_id
+            )
+          `)
+          .eq('folder_id', folderId)
+          .eq('resources.user_id', user.id)
+          .eq('resources.is_deleted', false);
       } else {
-        query = query.is('folder_id', null);
+        // Fetch all resources not in any folder (resources with no entries in resource_folders)
+        const { data: resourcesInFolders } = await supabase
+          .from('resource_folders')
+          .select('resource_id');
+
+        const resourceIdsInFolders = resourcesInFolders?.map(rf => rf.resource_id) || [];
+
+        query = supabase
+          .from('resources')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_deleted', false)
+          .not('id', 'in', `(${resourceIdsInFolders.length > 0 ? resourceIdsInFolders.join(',') : 'null'})`)
+          .order('created_at', { ascending: false });
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
-      setResources(data || []);
+
+      let resourcesData: Resource[] = [];
+      
+      if (folderId) {
+        // Extract resources from the junction table query result
+        resourcesData = data?.map((item: any) => item.resources) || [];
+      } else {
+        resourcesData = data || [];
+      }
+
+      setResources(resourcesData);
     } catch (error) {
       console.error('Error fetching resources:', error);
       toast({

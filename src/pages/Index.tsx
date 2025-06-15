@@ -17,7 +17,12 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   
-  const { resources, loading, refetch, toggleFavorite, deleteResource } = useResources();
+  // Extract folder ID from selectedCategory if it's a folder
+  const currentFolderId = selectedCategory.startsWith('folder:') 
+    ? selectedCategory.replace('folder:', '') 
+    : undefined;
+  
+  const { resources, loading, refetch, toggleFavorite, deleteResource } = useResources(currentFolderId);
   const { uploadFiles } = useUpload();
 
   // Show auth page if not authenticated
@@ -52,8 +57,7 @@ const Index = () => {
     } else if (selectedCategory === 'recent') {
       matchesCategory = true; // For now, showing all as recent
     } else if (selectedCategory.startsWith('folder:')) {
-      // For folder filtering, we would need to join with resource_folders table
-      // For now, we'll show all resources when a folder is selected
+      // When a folder is selected, we already filtered by folder in useResources
       matchesCategory = true;
     }
     
@@ -183,7 +187,7 @@ const Index = () => {
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-1">No files found</h3>
                   <p className="text-gray-500">
-                    {searchQuery ? 'Try adjusting your search terms' : 'Upload your first files to get started'}
+                    {searchQuery ? 'Try adjusting your search terms' : selectedCategory.startsWith('folder:') ? 'No files in this folder yet' : 'Upload your first files to get started'}
                   </p>
                 </div>
               ) : (
