@@ -106,6 +106,15 @@ export const useFolders = () => {
 
   const deleteFolder = async (folderId: string) => {
     try {
+      // First remove all resource assignments for this folder
+      const { error: removeResourcesError } = await supabase
+        .from('resource_folders')
+        .delete()
+        .eq('folder_id', folderId);
+
+      if (removeResourcesError) throw removeResourcesError;
+
+      // Then delete the folder
       const { error } = await supabase
         .from('folders')
         .delete()
@@ -130,6 +139,19 @@ export const useFolders = () => {
 
   const assignResourceToFolder = async (resourceId: string, folderId: string) => {
     try {
+      // Check if the assignment already exists
+      const { data: existing } = await supabase
+        .from('resource_folders')
+        .select('id')
+        .eq('resource_id', resourceId)
+        .eq('folder_id', folderId)
+        .single();
+
+      if (existing) {
+        console.log('Resource already assigned to folder');
+        return;
+      }
+
       const { error } = await supabase
         .from('resource_folders')
         .insert({

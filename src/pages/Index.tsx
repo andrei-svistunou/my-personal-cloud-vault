@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResources } from '@/hooks/useResources';
+import { useFolders } from '@/hooks/useFolders';
 import { useUpload } from '@/hooks/useUpload';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
@@ -26,6 +26,7 @@ const Index = () => {
   const showDeleted = selectedCategory === 'trash';
   
   const { resources, loading, refetch, toggleFavorite, deleteResource, restoreResource, permanentlyDeleteResource } = useResources(currentFolderId, showDeleted);
+  const { folders } = useFolders();
   const { uploadFiles } = useUpload();
 
   // Fetch all resources (including deleted) for counts
@@ -146,8 +147,9 @@ const Index = () => {
     if (selectedCategory === 'recent') return 'Recent';
     if (selectedCategory === 'trash') return 'Trash';
     if (selectedCategory.startsWith('folder:')) {
-      // For folder titles, we would need to look up the folder name
-      return 'Folder';
+      const folderId = selectedCategory.replace('folder:', '');
+      const folder = folders?.find(f => f.id === folderId);
+      return folder ? folder.name : 'Folder';
     }
     return 'Files';
   };

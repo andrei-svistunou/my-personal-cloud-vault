@@ -20,6 +20,7 @@ interface ResourceCardProps {
   onToggleFavorite: (resourceId: string) => void;
   onDelete: (resourceId: string) => void;
   onRestore?: (resourceId: string) => void;
+  onAssignToFolder?: (resource: Resource, e?: React.MouseEvent) => void;
   formatFileSize: (size: string) => string;
   formatDate: (date: string) => string;
   isTrashView?: boolean;
@@ -32,6 +33,7 @@ const ResourceCard = ({
   onToggleFavorite,
   onDelete,
   onRestore,
+  onAssignToFolder,
   formatFileSize,
   formatDate,
   isTrashView = false,
@@ -80,6 +82,7 @@ const ResourceCard = ({
           onToggleFavorite={onToggleFavorite}
           onDelete={onDelete}
           onRestore={onRestore}
+          onAssignToFolder={onAssignToFolder}
           variant="grid"
           isTrashView={isTrashView}
         />

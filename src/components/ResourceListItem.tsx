@@ -20,6 +20,7 @@ interface ResourceListItemProps {
   onToggleFavorite: (resourceId: string) => void;
   onDelete: (resourceId: string) => void;
   onRestore?: (resourceId: string) => void;
+  onAssignToFolder?: (resource: Resource, e?: React.MouseEvent) => void;
   formatFileSize: (size: string) => string;
   formatDate: (date: string) => string;
   isTrashView?: boolean;
@@ -32,6 +33,7 @@ const ResourceListItem = ({
   onToggleFavorite,
   onDelete,
   onRestore,
+  onAssignToFolder,
   formatFileSize,
   formatDate,
   isTrashView = false,
@@ -69,6 +71,7 @@ const ResourceListItem = ({
           onToggleFavorite={onToggleFavorite}
           onDelete={onDelete}
           onRestore={onRestore}
+          onAssignToFolder={onAssignToFolder}
           variant="list"
           isTrashView={isTrashView}
         />
