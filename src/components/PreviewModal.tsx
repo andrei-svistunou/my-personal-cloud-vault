@@ -83,9 +83,11 @@ const PreviewModal = ({ resource, isOpen, onClose }: PreviewModalProps) => {
               <video
                 controls
                 className="max-w-full max-h-full rounded-lg shadow-lg"
-                poster={resource.thumbnail}
+                preload="metadata"
               >
                 <source src={resource.thumbnail} type="video/mp4" />
+                <source src={resource.thumbnail} type="video/webm" />
+                <source src={resource.thumbnail} type="video/ogg" />
                 Your browser does not support the video tag.
               </video>
             )}
