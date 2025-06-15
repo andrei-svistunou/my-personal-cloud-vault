@@ -9,34 +9,56 @@ import { FolderPlus } from 'lucide-react';
 interface FolderDialogProps {
   onCreateFolder: (name: string) => void;
   trigger?: React.ReactNode;
+  isOpen?: boolean;
+  onClose?: () => void;
+  title?: string;
+  description?: string;
 }
 
-const FolderDialog = ({ onCreateFolder, trigger }: FolderDialogProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+const FolderDialog = ({ 
+  onCreateFolder, 
+  trigger, 
+  isOpen: controlledOpen, 
+  onClose, 
+  title = "Create New Folder",
+  description 
+}: FolderDialogProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [folderName, setFolderName] = useState('');
+
+  const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setIsOpen = onClose ? onClose : setInternalOpen;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (folderName.trim()) {
       onCreateFolder(folderName.trim());
       setFolderName('');
-      setIsOpen(false);
+      if (controlledOpen === undefined) {
+        setInternalOpen(false);
+      }
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (controlledOpen === undefined) {
+      setInternalOpen(open);
+    } else if (!open && onClose) {
+      onClose();
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="outline" size="sm">
-            <FolderPlus className="h-4 w-4 mr-2" />
-            New Folder
-          </Button>
-        )}
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      {trigger && (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New Folder</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
+          {description && <p className="text-sm text-gray-600">{description}</p>}
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -50,7 +72,7 @@ const FolderDialog = ({ onCreateFolder, trigger }: FolderDialogProps) => {
             />
           </div>
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={!folderName.trim()}>
