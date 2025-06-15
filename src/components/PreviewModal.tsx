@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
 interface Resource {
@@ -34,6 +36,13 @@ const PreviewModal = ({ resource, isOpen, onClose }: PreviewModalProps) => {
         className="max-w-4xl max-h-[90vh] p-0 [&>button]:hidden" 
         onInteractOutside={(e) => e.preventDefault()}
       >
+        <DialogTitle className="sr-only">
+          {resource.name} Preview
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          Preview of {resource.type} file: {resource.name}
+        </DialogDescription>
+        
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
