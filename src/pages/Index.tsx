@@ -91,12 +91,16 @@ const Index = () => {
     refetch();
   };
 
-  const handleToggleFavorite = (resourceId: string) => {
-    toggleFavorite(resourceId);
+  const handleToggleFavorite = async (resourceId: string) => {
+    await toggleFavorite(resourceId);
+    // The toggleFavorite function in useResources hook already updates the local state
+    // so the UI will update immediately
   };
 
-  const handleDeleteResource = (resourceId: string) => {
-    deleteResource(resourceId);
+  const handleDeleteResource = async (resourceId: string) => {
+    await deleteResource(resourceId);
+    // The deleteResource function in useResources hook already updates the local state
+    // so the UI will update immediately
   };
 
   return (

@@ -20,6 +20,7 @@ interface Resource {
   thumbnail: string;
   isFavorite: boolean;
   storage_path?: string;
+  original_name?: string;
 }
 
 interface ResourceActionsProps {
@@ -58,11 +59,14 @@ const ResourceActions = ({
 
       if (error) throw error;
 
+      // Use original_name if available, otherwise fall back to resource.name
+      const filename = resource.original_name || resource.name;
+      
       // Create download link
       const url = URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
-      a.download = resource.name;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -70,7 +74,7 @@ const ResourceActions = ({
 
       toast({
         title: "Download started",
-        description: resource.name,
+        description: filename,
       });
     } catch (error) {
       console.error('Download error:', error);
