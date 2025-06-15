@@ -24,9 +24,11 @@ interface ResourceGridProps {
   resources: Resource[];
   viewMode: 'grid' | 'list';
   onResourceClick: (resource: Resource) => void;
+  onToggleFavorite: (resourceId: string) => void;
+  onDelete: (resourceId: string) => void;
 }
 
-const ResourceGrid = ({ resources, viewMode, onResourceClick }: ResourceGridProps) => {
+const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, onDelete }: ResourceGridProps) => {
   const [previewResource, setPreviewResource] = useState<Resource | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -53,6 +55,16 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick }: ResourceGridProp
     } else {
       onResourceClick(resource);
     }
+  };
+
+  const handleToggleFavorite = (resourceId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite(resourceId);
+  };
+
+  const handleDelete = (resourceId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(resourceId);
   };
 
   if (viewMode === 'list') {
@@ -102,11 +114,11 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick }: ResourceGridProp
                       <Download className="mr-2 h-4 w-4" />
                       Download
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => handleToggleFavorite(resource.id, e)}>
                       <Star className="mr-2 h-4 w-4" />
-                      Add to Favorites
+                      {resource.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
+                    <DropdownMenuItem className="text-red-600" onClick={(e) => handleDelete(resource.id, e)}>
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
                     </DropdownMenuItem>
@@ -172,11 +184,11 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick }: ResourceGridProp
                     <Download className="mr-2 h-4 w-4" />
                     Download
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => handleToggleFavorite(resource.id, e)}>
                     <Star className="mr-2 h-4 w-4" />
-                    Add to Favorites
+                    {resource.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600">
+                  <DropdownMenuItem className="text-red-600" onClick={(e) => handleDelete(resource.id, e)}>
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
                   </DropdownMenuItem>

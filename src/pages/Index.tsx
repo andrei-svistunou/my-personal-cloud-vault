@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResources } from '@/hooks/useResources';
 import { useUpload } from '@/hooks/useUpload';
+import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import ResourceGrid from '@/components/ResourceGrid';
@@ -47,24 +48,36 @@ const Index = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // Transform resources to match ResourceGrid expected format with proper type mapping
-  const transformedResources = filteredResources.map(resource => ({
-    id: resource.id,
-    name: resource.name,
-    type: resource.file_type as 'image' | 'video' | 'document',
-    size: `${(resource.file_size / 1024 / 1024).toFixed(2)} MB`, // Convert to string with MB format
-    date: resource.created_at,
-    thumbnail: resource.thumbnail_path || '',
-    isFavorite: resource.is_favorite,
-    original_name: resource.original_name,
-    mime_type: resource.mime_type,
-    storage_path: resource.storage_path,
-    folder_id: resource.folder_id,
-    is_deleted: resource.is_deleted,
-    created_at: resource.created_at,
-    updated_at: resource.updated_at,
-    user_id: resource.user_id
-  }));
+  // Transform resources to match ResourceGrid expected format with proper type mapping and image URLs
+  const transformedResources = filteredResources.map(resource => {
+    let thumbnailUrl = '';
+    
+    // Generate the public URL for the image from Supabase Storage
+    if (resource.storage_path) {
+      const { data } = supabase.storage
+        .from('resources')
+        .getPublicUrl(resource.storage_path);
+      thumbnailUrl = data.publicUrl;
+    }
+
+    return {
+      id: resource.id,
+      name: resource.name,
+      type: resource.file_type as 'image' | 'video' | 'document',
+      size: `${(resource.file_size / 1024 / 1024).toFixed(2)} MB`, // Convert to string with MB format
+      date: resource.created_at,
+      thumbnail: thumbnailUrl,
+      isFavorite: resource.is_favorite,
+      original_name: resource.original_name,
+      mime_type: resource.mime_type,
+      storage_path: resource.storage_path,
+      folder_id: resource.folder_id,
+      is_deleted: resource.is_deleted,
+      created_at: resource.created_at,
+      updated_at: resource.updated_at,
+      user_id: resource.user_id
+    };
+  });
 
   const handleResourceClick = (resource: any) => {
     console.log('Opening resource:', resource.name);
