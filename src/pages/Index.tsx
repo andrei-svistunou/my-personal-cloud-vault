@@ -16,7 +16,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   
-  const { resources, loading, refetch } = useResources();
+  const { resources, loading, refetch, toggleFavorite, deleteResource } = useResources();
   const { uploadFiles } = useUpload();
 
   // Show auth page if not authenticated
@@ -47,6 +47,25 @@ const Index = () => {
     return matchesSearch && matchesCategory;
   });
 
+  // Transform resources to match ResourceGrid expected format
+  const transformedResources = filteredResources.map(resource => ({
+    id: resource.id,
+    name: resource.name,
+    type: resource.file_type,
+    size: resource.file_size,
+    date: resource.created_at,
+    thumbnail: resource.thumbnail_path || '',
+    isFavorite: resource.is_favorite,
+    original_name: resource.original_name,
+    mime_type: resource.mime_type,
+    storage_path: resource.storage_path,
+    folder_id: resource.folder_id,
+    is_deleted: resource.is_deleted,
+    created_at: resource.created_at,
+    updated_at: resource.updated_at,
+    user_id: resource.user_id
+  }));
+
   const handleResourceClick = (resource: any) => {
     console.log('Opening resource:', resource.name);
     // Preview functionality will be implemented
@@ -56,6 +75,14 @@ const Index = () => {
     await uploadFiles(files);
     setIsUploadOpen(false);
     refetch();
+  };
+
+  const handleToggleFavorite = (resourceId: string) => {
+    toggleFavorite(resourceId);
+  };
+
+  const handleDeleteResource = (resourceId: string) => {
+    deleteResource(resourceId);
   };
 
   return (
@@ -119,9 +146,11 @@ const Index = () => {
                 </div>
               ) : (
                 <ResourceGrid
-                  resources={filteredResources}
+                  resources={transformedResources}
                   viewMode={viewMode}
                   onResourceClick={handleResourceClick}
+                  onToggleFavorite={handleToggleFavorite}
+                  onDelete={handleDeleteResource}
                 />
               )}
             </div>
