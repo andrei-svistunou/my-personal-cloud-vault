@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResources } from '@/hooks/useResources';
@@ -10,6 +9,7 @@ import Sidebar from '@/components/Sidebar';
 import ResourceGrid from '@/components/ResourceGrid';
 import UploadZone from '@/components/UploadZone';
 import BreadcrumbNavigation from '@/components/BreadcrumbNavigation';
+import PreviewModal from '@/components/PreviewModal';
 import Auth from '@/components/Auth';
 
 const Index = () => {
@@ -18,6 +18,8 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [previewResource, setPreviewResource] = useState<any>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
   // Extract folder ID from selectedCategory if it's a folder
   const currentFolderId = selectedCategory.startsWith('folder:') 
@@ -109,7 +111,22 @@ const Index = () => {
 
   const handleResourceClick = (resource: any) => {
     console.log('Opening resource:', resource.name);
-    // Preview functionality will be implemented
+    setPreviewResource(resource);
+    setIsPreviewOpen(true);
+  };
+
+  const handlePreview = (resource: any, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    console.log('Preview resource:', resource);
+    setPreviewResource(resource);
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewResource(null);
   };
 
   const handleUpload = async (files: File[]) => {
@@ -225,6 +242,7 @@ const Index = () => {
                   resources={transformedResources}
                   viewMode={viewMode}
                   onResourceClick={handleResourceClick}
+                  onPreview={handlePreview}
                   onToggleFavorite={handleToggleFavorite}
                   onDelete={handleDeleteResource}
                   onRestore={selectedCategory === 'trash' ? handleRestoreResource : undefined}
@@ -243,6 +261,14 @@ const Index = () => {
           setIsUploadOpen(false);
         }}
         onUpload={handleUpload}
+      />
+
+      <PreviewModal
+        resource={previewResource}
+        isOpen={isPreviewOpen}
+        onClose={handleClosePreview}
+        onToggleFavorite={handleToggleFavorite}
+        onDelete={handleDeleteResource}
       />
     </div>
   );
