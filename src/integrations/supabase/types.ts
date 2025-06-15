@@ -44,6 +44,42 @@ export type Database = {
           },
         ]
       }
+      resource_folders: {
+        Row: {
+          created_at: string
+          folder_id: string
+          id: string
+          resource_id: string
+        }
+        Insert: {
+          created_at?: string
+          folder_id: string
+          id?: string
+          resource_id: string
+        }
+        Update: {
+          created_at?: string
+          folder_id?: string
+          id?: string
+          resource_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_folders_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_folders_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resources: {
         Row: {
           created_at: string | null

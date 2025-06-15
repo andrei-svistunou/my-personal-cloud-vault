@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { MoreVertical, Star, Download, Trash2, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { MoreVertical, Star, Download, Trash2, Eye, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useFolders } from '@/hooks/useFolders';
+import ResourceFolderDialog from './ResourceFolderDialog';
 
 interface Resource {
   id: string;
@@ -39,6 +41,9 @@ const ResourceActions = ({
   variant = 'list' 
 }: ResourceActionsProps) => {
   const { toast } = useToast();
+  const { folders, assignResourceToFolder, removeResourceFromFolder } = useFolders();
+  const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
+  const [assignedFolderIds, setAssignedFolderIds] = useState<string[]>([]);
 
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -96,41 +101,82 @@ const ResourceActions = ({
     onDelete(resource.id);
   };
 
+  const handleManageFolders = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Fetch current folder assignments
+    try {
+      const { data, error } = await supabase
+        .from('resource_folders')
+        .select('folder_id')
+        .eq('resource_id', resource.id);
+
+      if (error) throw error;
+      
+      setAssignedFolderIds(data.map(rf => rf.folder_id));
+      setIsFolderDialogOpen(true);
+    } catch (error) {
+      console.error('Error fetching resource folders:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load folder assignments",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant={variant === 'grid' ? 'secondary' : 'ghost'} 
-          size="sm" 
-          className={
-            variant === 'grid' 
-              ? "h-8 w-8 p-0 bg-black/20 hover:bg-black/40 text-white border-0"
-              : "h-8 w-8 p-0"
-          }
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={(e) => onPreview(resource, e)}>
-          <Eye className="mr-2 h-4 w-4" />
-          Preview
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleDownload}>
-          <Download className="mr-2 h-4 w-4" />
-          Download
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleToggleFavorite}>
-          <Star className="mr-2 h-4 w-4" />
-          {resource.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-        </DropdownMenuItem>
-        <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant={variant === 'grid' ? 'secondary' : 'ghost'} 
+            size="sm" 
+            className={
+              variant === 'grid' 
+                ? "h-8 w-8 p-0 bg-black/20 hover:bg-black/40 text-white border-0"
+                : "h-8 w-8 p-0"
+            }
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={(e) => onPreview(resource, e)}>
+            <Eye className="mr-2 h-4 w-4" />
+            Preview
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleDownload}>
+            <Download className="mr-2 h-4 w-4" />
+            Download
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleManageFolders}>
+            <FolderOpen className="mr-2 h-4 w-4" />
+            Manage Folders
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleToggleFavorite}>
+            <Star className="mr-2 h-4 w-4" />
+            {resource.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+          </DropdownMenuItem>
+          <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ResourceFolderDialog
+        isOpen={isFolderDialogOpen}
+        onClose={() => setIsFolderDialogOpen(false)}
+        resourceId={resource.id}
+        resourceName={resource.name}
+        folders={folders}
+        onAssignToFolder={assignResourceToFolder}
+        onRemoveFromFolder={removeResourceFromFolder}
+        assignedFolderIds={assignedFolderIds}
+      />
+    </>
   );
 };
 

@@ -38,12 +38,24 @@ const Index = () => {
 
   const filteredResources = resources.filter((resource) => {
     const matchesSearch = resource.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = 
-      selectedCategory === 'all' ||
-      (selectedCategory === 'photos' && resource.file_type === 'image') ||
-      (selectedCategory === 'videos' && resource.file_type === 'video') ||
-      (selectedCategory === 'favorites' && resource.is_favorite) ||
-      selectedCategory === 'recent'; // For now, showing all as recent
+    
+    let matchesCategory = false;
+    
+    if (selectedCategory === 'all') {
+      matchesCategory = true;
+    } else if (selectedCategory === 'photos') {
+      matchesCategory = resource.file_type === 'image';
+    } else if (selectedCategory === 'videos') {
+      matchesCategory = resource.file_type === 'video';
+    } else if (selectedCategory === 'favorites') {
+      matchesCategory = resource.is_favorite;
+    } else if (selectedCategory === 'recent') {
+      matchesCategory = true; // For now, showing all as recent
+    } else if (selectedCategory.startsWith('folder:')) {
+      // For folder filtering, we would need to join with resource_folders table
+      // For now, we'll show all resources when a folder is selected
+      matchesCategory = true;
+    }
     
     return matchesSearch && matchesCategory;
   });
@@ -103,6 +115,20 @@ const Index = () => {
     // so the UI will update immediately
   };
 
+  const getCategoryTitle = () => {
+    if (selectedCategory === 'all') return 'All Files';
+    if (selectedCategory === 'photos') return 'Photos';
+    if (selectedCategory === 'videos') return 'Videos';
+    if (selectedCategory === 'favorites') return 'Favorites';
+    if (selectedCategory === 'recent') return 'Recent';
+    if (selectedCategory === 'trash') return 'Trash';
+    if (selectedCategory.startsWith('folder:')) {
+      // For folder titles, we would need to look up the folder name
+      return 'Folder';
+    }
+    return 'Files';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
@@ -135,12 +161,7 @@ const Index = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {selectedCategory === 'all' && 'All Files'}
-                  {selectedCategory === 'photos' && 'Photos'}
-                  {selectedCategory === 'videos' && 'Videos'}
-                  {selectedCategory === 'favorites' && 'Favorites'}
-                  {selectedCategory === 'recent' && 'Recent'}
-                  {selectedCategory === 'trash' && 'Trash'}
+                  {getCategoryTitle()}
                 </h2>
                 <p className="text-gray-600">
                   {loading ? 'Loading...' : `${filteredResources.length} ${filteredResources.length === 1 ? 'item' : 'items'}`}

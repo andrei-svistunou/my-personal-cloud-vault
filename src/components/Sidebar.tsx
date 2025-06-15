@@ -1,8 +1,16 @@
 
-import React from 'react';
-import { Folder, Image, Video, File, Star, Trash2, Clock, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Folder, Image, Video, File, Star, Trash2, Clock, LogOut, Plus, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
+import { useFolders } from '@/hooks/useFolders';
+import FolderDialog from './FolderDialog';
 
 interface SidebarProps {
   selectedCategory: string;
@@ -19,6 +27,9 @@ interface SidebarProps {
 
 const Sidebar = ({ selectedCategory, onCategoryChange, resourceCounts }: SidebarProps) => {
   const { signOut, user } = useAuth();
+  const { folders, createFolder, updateFolder, deleteFolder } = useFolders();
+  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
 
   const categories = [
     { id: 'all', name: 'All Files', icon: File, count: resourceCounts.all },
@@ -29,12 +40,27 @@ const Sidebar = ({ selectedCategory, onCategoryChange, resourceCounts }: Sidebar
     { id: 'trash', name: 'Trash', icon: Trash2, count: resourceCounts.trash },
   ];
 
-  const folders = [
-    { name: 'Family Photos', count: 0 },
-    { name: 'Work Documents', count: 0 },
-    { name: 'Travel', count: 0 },
-    { name: 'Screenshots', count: 0 },
-  ];
+  const handleFolderCreate = (name: string) => {
+    createFolder(name);
+  };
+
+  const handleFolderRename = (folderId: string, currentName: string) => {
+    setEditingFolderId(folderId);
+    setEditingName(currentName);
+  };
+
+  const handleFolderRenameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingFolderId && editingName.trim()) {
+      updateFolder(editingFolderId, editingName.trim());
+      setEditingFolderId(null);
+      setEditingName('');
+    }
+  };
+
+  const handleFolderDelete = (folderId: string) => {
+    deleteFolder(folderId);
+  };
 
   return (
     <aside className="w-64 bg-gray-50/50 border-r border-gray-200 h-full flex flex-col">
@@ -62,18 +88,70 @@ const Sidebar = ({ selectedCategory, onCategoryChange, resourceCounts }: Sidebar
         </div>
 
         <div className="mt-8">
-          <h3 className="text-sm font-medium text-gray-500 mb-3">Folders</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-gray-500">Folders</h3>
+            <FolderDialog 
+              onCreateFolder={handleFolderCreate}
+              trigger={
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <Plus className="h-3 w-3" />
+                </Button>
+              }
+            />
+          </div>
           <div className="space-y-1">
             {folders.map((folder) => (
-              <Button
-                key={folder.name}
-                variant="ghost"
-                className="w-full justify-start h-9 hover:bg-gray-100"
-              >
-                <Folder className="mr-3 h-4 w-4 text-blue-500" />
-                <span className="flex-1 text-left text-sm">{folder.name}</span>
-                <span className="text-xs text-gray-400">{folder.count}</span>
-              </Button>
+              <div key={folder.id} className="group relative">
+                {editingFolderId === folder.id ? (
+                  <form onSubmit={handleFolderRenameSubmit} className="px-2">
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onBlur={() => {
+                        setEditingFolderId(null);
+                        setEditingName('');
+                      }}
+                      className="w-full text-sm bg-transparent border-none outline-none"
+                      autoFocus
+                    />
+                  </form>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start h-9 hover:bg-gray-100 ${
+                      selectedCategory === `folder:${folder.id}` ? 'bg-blue-100 text-blue-700' : ''
+                    }`}
+                    onClick={() => onCategoryChange(`folder:${folder.id}`)}
+                  >
+                    <Folder className="mr-3 h-4 w-4 text-blue-500" />
+                    <span className="flex-1 text-left text-sm truncate">{folder.name}</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleFolderRename(folder.id, folder.name)}>
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleFolderDelete(folder.id)}
+                          className="text-red-600"
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
         </div>
