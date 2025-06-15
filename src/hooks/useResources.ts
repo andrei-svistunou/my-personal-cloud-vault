@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -61,19 +60,12 @@ export const useResources = (folderId?: string, showDeleted: boolean = false) =>
           .eq('resources.user_id', user.id)
           .eq('resources.is_deleted', showDeleted);
       } else {
-        // Fetch all resources not in any folder (resources with no entries in resource_folders)
-        const { data: resourcesInFolders } = await supabase
-          .from('resource_folders')
-          .select('resource_id');
-
-        const resourceIdsInFolders = resourcesInFolders?.map(rf => rf.resource_id) || [];
-
+        // Fetch ALL resources for "All Files" view - don't exclude resources that are in folders
         query = supabase
           .from('resources')
           .select('*')
           .eq('user_id', user.id)
           .eq('is_deleted', showDeleted)
-          .not('id', 'in', `(${resourceIdsInFolders.length > 0 ? resourceIdsInFolders.join(',') : 'null'})`)
           .order('created_at', { ascending: false });
       }
 
