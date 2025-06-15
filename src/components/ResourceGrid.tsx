@@ -12,6 +12,7 @@ interface Resource {
   date: string;
   thumbnail: string;
   isFavorite: boolean;
+  storage_path?: string;
 }
 
 interface ResourceGridProps {
@@ -83,6 +84,8 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, 
           resource={previewResource}
           isOpen={isPreviewOpen}
           onClose={handleClosePreview}
+          onToggleFavorite={onToggleFavorite}
+          onDelete={onDelete}
         />
       </>
     );
@@ -109,6 +112,8 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, 
         resource={previewResource}
         isOpen={isPreviewOpen}
         onClose={handleClosePreview}
+        onToggleFavorite={onToggleFavorite}
+        onDelete={onDelete}
       />
     </>
   );

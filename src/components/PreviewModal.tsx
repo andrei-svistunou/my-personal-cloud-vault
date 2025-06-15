@@ -8,6 +8,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Resource {
   id: string;
@@ -17,18 +19,77 @@ interface Resource {
   date: string;
   thumbnail: string;
   isFavorite: boolean;
+  storage_path?: string;
 }
 
 interface PreviewModalProps {
   resource: Resource | null;
   isOpen: boolean;
   onClose: () => void;
+  onToggleFavorite?: (resourceId: string) => void;
+  onDelete?: (resourceId: string) => void;
 }
 
-const PreviewModal = ({ resource, isOpen, onClose }: PreviewModalProps) => {
+const PreviewModal = ({ resource, isOpen, onClose, onToggleFavorite, onDelete }: PreviewModalProps) => {
+  const { toast } = useToast();
+  
   if (!resource) return null;
 
   const formatDate = (date: string) => new Date(date).toLocaleDateString();
+
+  const handleDownload = async () => {
+    if (!resource.storage_path) {
+      toast({
+        title: "Download failed",
+        description: "File path not available",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('resources')
+        .download(resource.storage_path);
+
+      if (error) throw error;
+
+      // Create download link
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = resource.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download started",
+        description: resource.name,
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download failed",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleFavorite = () => {
+    if (onToggleFavorite) {
+      onToggleFavorite(resource.id);
+    }
+  };
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(resource.id);
+      onClose();
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -55,13 +116,13 @@ const PreviewModal = ({ resource, isOpen, onClose }: PreviewModalProps) => {
               </p>
             </div>
             <div className="flex items-center space-x-2 ml-4">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleDownload}>
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleToggleFavorite}>
                 <Star className={`h-4 w-4 ${resource.isFavorite ? 'text-yellow-400 fill-current' : ''}`} />
               </Button>
-              <Button variant="ghost" size="sm" className="text-red-600">
+              <Button variant="ghost" size="sm" className="text-red-600" onClick={handleDelete}>
                 <Trash2 className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="sm" onClick={onClose}>

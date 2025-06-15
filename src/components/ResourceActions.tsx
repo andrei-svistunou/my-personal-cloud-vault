@@ -8,6 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Resource {
   id: string;
@@ -17,6 +19,7 @@ interface Resource {
   date: string;
   thumbnail: string;
   isFavorite: boolean;
+  storage_path?: string;
 }
 
 interface ResourceActionsProps {
@@ -34,6 +37,51 @@ const ResourceActions = ({
   onDelete, 
   variant = 'list' 
 }: ResourceActionsProps) => {
+  const { toast } = useToast();
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!resource.storage_path) {
+      toast({
+        title: "Download failed",
+        description: "File path not available",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('resources')
+        .download(resource.storage_path);
+
+      if (error) throw error;
+
+      // Create download link
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = resource.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download started",
+        description: resource.name,
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download failed",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -54,7 +102,7 @@ const ResourceActions = ({
           <Eye className="mr-2 h-4 w-4" />
           Preview
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleDownload}>
           <Download className="mr-2 h-4 w-4" />
           Download
         </DropdownMenuItem>
