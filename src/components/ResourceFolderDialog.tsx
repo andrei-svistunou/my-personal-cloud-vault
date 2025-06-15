@@ -50,9 +50,17 @@ const ResourceFolderDialog = ({
     setSelectedFolders(newSelectedFolders);
   };
 
+  // Prevent the dialog from closing when clicking inside it
+  const handleOpenChange = (open: boolean) => {
+    // Only allow closing when explicitly called (e.g., Done button or X button)
+    if (!open) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Assign "{resourceName}" to Folders</DialogTitle>
         </DialogHeader>
