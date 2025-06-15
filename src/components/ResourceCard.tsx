@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Star } from 'lucide-react';
+import { Star, Play } from 'lucide-react';
 import ResourceActions from './ResourceActions';
 
 interface Resource {
@@ -37,12 +36,27 @@ const ResourceCard = ({
       className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-blue-300 transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
       onClick={() => onResourceClick(resource)}
     >
-      <div className="aspect-square bg-gray-100 overflow-hidden">
-        <img
-          src={resource.thumbnail}
-          alt={resource.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+      <div className="aspect-square bg-gray-100 overflow-hidden relative">
+        {resource.type === 'video' ? (
+          <>
+            <video
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              preload="metadata"
+              muted
+            >
+              <source src={resource.thumbnail + '#t=1'} type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
+              <Play className="h-8 w-8 text-white opacity-80" fill="currentColor" />
+            </div>
+          </>
+        ) : (
+          <img
+            src={resource.thumbnail}
+            alt={resource.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        )}
       </div>
       
       <div className="p-3">
