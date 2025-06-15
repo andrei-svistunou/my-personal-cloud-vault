@@ -52,13 +52,11 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, 
     }
   };
 
-  const handleToggleFavorite = (resourceId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggleFavorite = (resourceId: string) => {
     onToggleFavorite(resourceId);
   };
 
-  const handleDelete = (resourceId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = (resourceId: string) => {
     onDelete(resourceId);
   };
 
@@ -84,8 +82,8 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, 
           resource={previewResource}
           isOpen={isPreviewOpen}
           onClose={handleClosePreview}
-          onToggleFavorite={onToggleFavorite}
-          onDelete={onDelete}
+          onToggleFavorite={handleToggleFavorite}
+          onDelete={handleDelete}
         />
       </>
     );
@@ -112,8 +110,8 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, 
         resource={previewResource}
         isOpen={isPreviewOpen}
         onClose={handleClosePreview}
-        onToggleFavorite={onToggleFavorite}
-        onDelete={onDelete}
+        onToggleFavorite={handleToggleFavorite}
+        onDelete={handleDelete}
       />
     </>
   );

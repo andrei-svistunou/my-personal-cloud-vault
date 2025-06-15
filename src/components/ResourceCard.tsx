@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Star, Play } from 'lucide-react';
 import ResourceActions from './ResourceActions';
@@ -16,8 +17,8 @@ interface ResourceCardProps {
   resource: Resource;
   onResourceClick: (resource: Resource) => void;
   onPreview: (resource: Resource, e?: React.MouseEvent) => void;
-  onToggleFavorite: (resourceId: string, e: React.MouseEvent) => void;
-  onDelete: (resourceId: string, e: React.MouseEvent) => void;
+  onToggleFavorite: (resourceId: string) => void;
+  onDelete: (resourceId: string) => void;
   formatFileSize: (size: string) => string;
   formatDate: (date: string) => string;
 }

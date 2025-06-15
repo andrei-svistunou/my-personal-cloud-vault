@@ -26,8 +26,8 @@ interface Resource {
 interface ResourceActionsProps {
   resource: Resource;
   onPreview: (resource: Resource, e?: React.MouseEvent) => void;
-  onToggleFavorite: (resourceId: string, e: React.MouseEvent) => void;
-  onDelete: (resourceId: string, e: React.MouseEvent) => void;
+  onToggleFavorite: (resourceId: string) => void;
+  onDelete: (resourceId: string) => void;
   variant?: 'grid' | 'list';
 }
 
@@ -86,6 +86,16 @@ const ResourceActions = ({
     }
   };
 
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite(resource.id);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(resource.id);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -97,6 +107,7 @@ const ResourceActions = ({
               ? "h-8 w-8 p-0 bg-black/20 hover:bg-black/40 text-white border-0"
               : "h-8 w-8 p-0"
           }
+          onClick={(e) => e.stopPropagation()}
         >
           <MoreVertical className="h-4 w-4" />
         </Button>
@@ -110,11 +121,11 @@ const ResourceActions = ({
           <Download className="mr-2 h-4 w-4" />
           Download
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={(e) => onToggleFavorite(resource.id, e)}>
+        <DropdownMenuItem onClick={handleToggleFavorite}>
           <Star className="mr-2 h-4 w-4" />
           {resource.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-red-600" onClick={(e) => onDelete(resource.id, e)}>
+        <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
           <Trash2 className="mr-2 h-4 w-4" />
           Delete
         </DropdownMenuItem>
