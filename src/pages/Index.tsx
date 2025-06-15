@@ -52,7 +52,7 @@ const Index = () => {
     id: resource.id,
     name: resource.name,
     type: resource.file_type as 'image' | 'video' | 'document',
-    size: resource.file_size,
+    size: `${(resource.file_size / 1024 / 1024).toFixed(2)} MB`, // Convert to string with MB format
     date: resource.created_at,
     thumbnail: resource.thumbnail_path || '',
     isFavorite: resource.is_favorite,

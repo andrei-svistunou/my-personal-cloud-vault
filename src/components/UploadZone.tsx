@@ -38,13 +38,16 @@ const UploadZone = ({ isOpen, onClose, onUpload }: UploadZoneProps) => {
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const newFiles = Array.from(e.dataTransfer.files);
+      console.log('Files dropped:', newFiles.length);
       setFiles(prev => [...prev, ...newFiles]);
     }
   }, []);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('File input change triggered');
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
+      console.log('Files selected:', newFiles.length);
       setFiles(prev => [...prev, ...newFiles]);
     }
   };
@@ -65,6 +68,14 @@ const UploadZone = ({ isOpen, onClose, onUpload }: UploadZoneProps) => {
       console.error('Upload failed:', error);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleChooseFiles = () => {
+    console.log('Choose files button clicked');
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
     }
   };
 
@@ -119,11 +130,14 @@ const UploadZone = ({ isOpen, onClose, onUpload }: UploadZoneProps) => {
             className="hidden"
             id="file-upload"
           />
-          <label htmlFor="file-upload">
-            <Button variant="outline" className="cursor-pointer">
-              Choose Files
-            </Button>
-          </label>
+          
+          <Button 
+            variant="outline" 
+            onClick={handleChooseFiles}
+            type="button"
+          >
+            Choose Files
+          </Button>
         </div>
 
         {files.length > 0 && (
