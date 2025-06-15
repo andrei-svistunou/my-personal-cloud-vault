@@ -13,11 +13,13 @@ import {
 interface UploadZoneProps {
   isOpen: boolean;
   onClose: () => void;
+  onUpload: (files: File[]) => Promise<void>;
 }
 
-const UploadZone = ({ isOpen, onClose }: UploadZoneProps) => {
+const UploadZone = ({ isOpen, onClose, onUpload }: UploadZoneProps) => {
   const [dragActive, setDragActive] = React.useState(false);
   const [files, setFiles] = React.useState<File[]>([]);
+  const [uploading, setUploading] = React.useState(false);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -49,6 +51,21 @@ const UploadZone = ({ isOpen, onClose }: UploadZoneProps) => {
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpload = async () => {
+    if (files.length === 0) return;
+    
+    setUploading(true);
+    try {
+      await onUpload(files);
+      setFiles([]);
+      onClose();
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const getFileIcon = (file: File) => {
@@ -147,14 +164,15 @@ const UploadZone = ({ isOpen, onClose }: UploadZoneProps) => {
         )}
 
         <div className="flex justify-end space-x-3 mt-6">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={uploading}>
             Cancel
           </Button>
           <Button 
             className="bg-blue-600 hover:bg-blue-700"
-            disabled={files.length === 0}
+            disabled={files.length === 0 || uploading}
+            onClick={handleUpload}
           >
-            Upload {files.length > 0 && `(${files.length})`}
+            {uploading ? 'Uploading...' : `Upload ${files.length > 0 ? `(${files.length})` : ''}`}
           </Button>
         </div>
       </DialogContent>
