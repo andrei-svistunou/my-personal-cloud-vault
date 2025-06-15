@@ -21,9 +21,19 @@ interface ResourceGridProps {
   onResourceClick: (resource: Resource) => void;
   onToggleFavorite: (resourceId: string) => void;
   onDelete: (resourceId: string) => void;
+  onRestore?: (resourceId: string) => void;
+  isTrashView?: boolean;
 }
 
-const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, onDelete }: ResourceGridProps) => {
+const ResourceGrid = ({ 
+  resources, 
+  viewMode, 
+  onResourceClick, 
+  onToggleFavorite, 
+  onDelete, 
+  onRestore, 
+  isTrashView = false 
+}: ResourceGridProps) => {
   const [previewResource, setPreviewResource] = useState<Resource | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -60,6 +70,12 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, 
     onDelete(resourceId);
   };
 
+  const handleRestore = (resourceId: string) => {
+    if (onRestore) {
+      onRestore(resourceId);
+    }
+  };
+
   if (viewMode === 'list') {
     return (
       <>
@@ -72,8 +88,10 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, 
               onPreview={handlePreview}
               onToggleFavorite={handleToggleFavorite}
               onDelete={handleDelete}
+              onRestore={handleRestore}
               formatFileSize={formatFileSize}
               formatDate={formatDate}
+              isTrashView={isTrashView}
             />
           ))}
         </div>
@@ -100,8 +118,10 @@ const ResourceGrid = ({ resources, viewMode, onResourceClick, onToggleFavorite, 
             onPreview={handlePreview}
             onToggleFavorite={handleToggleFavorite}
             onDelete={handleDelete}
+            onRestore={handleRestore}
             formatFileSize={formatFileSize}
             formatDate={formatDate}
+            isTrashView={isTrashView}
           />
         ))}
       </div>

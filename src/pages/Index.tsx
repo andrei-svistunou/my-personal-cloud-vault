@@ -22,8 +22,15 @@ const Index = () => {
     ? selectedCategory.replace('folder:', '') 
     : undefined;
   
-  const { resources, loading, refetch, toggleFavorite, deleteResource } = useResources(currentFolderId);
+  // Determine if we're showing deleted resources (trash)
+  const showDeleted = selectedCategory === 'trash';
+  
+  const { resources, loading, refetch, toggleFavorite, deleteResource, restoreResource, permanentlyDeleteResource } = useResources(currentFolderId, showDeleted);
   const { uploadFiles } = useUpload();
+
+  // Fetch all resources (including deleted) for counts
+  const { resources: allResources } = useResources(undefined, false);
+  const { resources: deletedResources } = useResources(undefined, true);
 
   // Show auth page if not authenticated
   if (authLoading) {
@@ -56,6 +63,8 @@ const Index = () => {
       matchesCategory = resource.is_favorite;
     } else if (selectedCategory === 'recent') {
       matchesCategory = true; // For now, showing all as recent
+    } else if (selectedCategory === 'trash') {
+      matchesCategory = true; // Already filtered by showDeleted
     } else if (selectedCategory.startsWith('folder:')) {
       // When a folder is selected, we already filtered by folder in useResources
       matchesCategory = true;
@@ -114,9 +123,19 @@ const Index = () => {
   };
 
   const handleDeleteResource = async (resourceId: string) => {
-    await deleteResource(resourceId);
-    // The deleteResource function in useResources hook already updates the local state
-    // so the UI will update immediately
+    if (selectedCategory === 'trash') {
+      // In trash, offer permanent delete
+      if (confirm('Are you sure you want to permanently delete this file? This action cannot be undone.')) {
+        await permanentlyDeleteResource(resourceId);
+      }
+    } else {
+      // Normal delete - move to trash
+      await deleteResource(resourceId);
+    }
+  };
+
+  const handleRestoreResource = async (resourceId: string) => {
+    await restoreResource(resourceId);
   };
 
   const getCategoryTitle = () => {
@@ -140,12 +159,12 @@ const Index = () => {
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
           resourceCounts={{
-            all: resources.length,
-            photos: resources.filter(r => r.file_type === 'image').length,
-            videos: resources.filter(r => r.file_type === 'video').length,
-            favorites: resources.filter(r => r.is_favorite).length,
-            recent: resources.length,
-            trash: 0, // We'll implement trash later
+            all: allResources.length,
+            photos: allResources.filter(r => r.file_type === 'image').length,
+            videos: allResources.filter(r => r.file_type === 'video').length,
+            favorites: allResources.filter(r => r.is_favorite).length,
+            recent: allResources.length,
+            trash: deletedResources.length,
           }}
         />
         
@@ -187,7 +206,7 @@ const Index = () => {
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-1">No files found</h3>
                   <p className="text-gray-500">
-                    {searchQuery ? 'Try adjusting your search terms' : selectedCategory.startsWith('folder:') ? 'No files in this folder yet' : 'Upload your first files to get started'}
+                    {searchQuery ? 'Try adjusting your search terms' : selectedCategory.startsWith('folder:') ? 'No files in this folder yet' : selectedCategory === 'trash' ? 'Trash is empty' : 'Upload your first files to get started'}
                   </p>
                 </div>
               ) : (
@@ -197,6 +216,8 @@ const Index = () => {
                   onResourceClick={handleResourceClick}
                   onToggleFavorite={handleToggleFavorite}
                   onDelete={handleDeleteResource}
+                  onRestore={selectedCategory === 'trash' ? handleRestoreResource : undefined}
+                  isTrashView={selectedCategory === 'trash'}
                 />
               )}
             </div>

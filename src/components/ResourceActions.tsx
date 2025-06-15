@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { MoreVertical, Star, Download, Trash2, Eye, FolderOpen } from 'lucide-react';
+import { MoreVertical, Star, Download, Trash2, Eye, FolderOpen, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -30,7 +30,9 @@ interface ResourceActionsProps {
   onPreview: (resource: Resource, e?: React.MouseEvent) => void;
   onToggleFavorite: (resourceId: string) => void;
   onDelete: (resourceId: string) => void;
+  onRestore?: (resourceId: string) => void;
   variant?: 'grid' | 'list';
+  isTrashView?: boolean;
 }
 
 const ResourceActions = ({ 
@@ -38,7 +40,9 @@ const ResourceActions = ({
   onPreview, 
   onToggleFavorite, 
   onDelete, 
-  variant = 'list' 
+  onRestore,
+  variant = 'list',
+  isTrashView = false
 }: ResourceActionsProps) => {
   const { toast } = useToast();
   const { folders, assignResourceToFolder, removeResourceFromFolder } = useFolders();
@@ -101,6 +105,13 @@ const ResourceActions = ({
     onDelete(resource.id);
   };
 
+  const handleRestore = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onRestore) {
+      onRestore(resource.id);
+    }
+  };
+
   const handleManageFolders = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
@@ -143,39 +154,57 @@ const ResourceActions = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={(e) => onPreview(resource, e)}>
-            <Eye className="mr-2 h-4 w-4" />
-            Preview
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDownload}>
-            <Download className="mr-2 h-4 w-4" />
-            Download
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleManageFolders}>
-            <FolderOpen className="mr-2 h-4 w-4" />
-            Manage Folders
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleToggleFavorite}>
-            <Star className="mr-2 h-4 w-4" />
-            {resource.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-          </DropdownMenuItem>
-          <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
+          {!isTrashView && (
+            <>
+              <DropdownMenuItem onClick={(e) => onPreview(resource, e)}>
+                <Eye className="mr-2 h-4 w-4" />
+                Preview
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownload}>
+                <Download className="mr-2 h-4 w-4" />
+                Download
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleManageFolders}>
+                <FolderOpen className="mr-2 h-4 w-4" />
+                Manage Folders
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleToggleFavorite}>
+                <Star className="mr-2 h-4 w-4" />
+                {resource.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Move to Trash
+              </DropdownMenuItem>
+            </>
+          )}
+          {isTrashView && (
+            <>
+              <DropdownMenuItem onClick={handleRestore}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Restore
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Permanently
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <ResourceFolderDialog
-        isOpen={isFolderDialogOpen}
-        onClose={() => setIsFolderDialogOpen(false)}
-        resourceId={resource.id}
-        resourceName={resource.name}
-        folders={folders}
-        onAssignToFolder={assignResourceToFolder}
-        onRemoveFromFolder={removeResourceFromFolder}
-        assignedFolderIds={assignedFolderIds}
-      />
+      {!isTrashView && (
+        <ResourceFolderDialog
+          isOpen={isFolderDialogOpen}
+          onClose={() => setIsFolderDialogOpen(false)}
+          resourceId={resource.id}
+          resourceName={resource.name}
+          folders={folders}
+          onAssignToFolder={assignResourceToFolder}
+          onRemoveFromFolder={removeResourceFromFolder}
+          assignedFolderIds={assignedFolderIds}
+        />
+      )}
     </>
   );
 };

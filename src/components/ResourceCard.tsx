@@ -19,8 +19,10 @@ interface ResourceCardProps {
   onPreview: (resource: Resource, e?: React.MouseEvent) => void;
   onToggleFavorite: (resourceId: string) => void;
   onDelete: (resourceId: string) => void;
+  onRestore?: (resourceId: string) => void;
   formatFileSize: (size: string) => string;
   formatDate: (date: string) => string;
+  isTrashView?: boolean;
 }
 
 const ResourceCard = ({
@@ -29,8 +31,10 @@ const ResourceCard = ({
   onPreview,
   onToggleFavorite,
   onDelete,
+  onRestore,
   formatFileSize,
   formatDate,
+  isTrashView = false,
 }: ResourceCardProps) => {
   return (
     <div
@@ -75,11 +79,13 @@ const ResourceCard = ({
           onPreview={onPreview}
           onToggleFavorite={onToggleFavorite}
           onDelete={onDelete}
+          onRestore={onRestore}
           variant="grid"
+          isTrashView={isTrashView}
         />
       </div>
 
-      {resource.isFavorite && (
+      {!isTrashView && resource.isFavorite && (
         <div className="absolute top-2 left-2">
           <Star className="h-4 w-4 text-yellow-400 fill-current drop-shadow-sm" />
         </div>

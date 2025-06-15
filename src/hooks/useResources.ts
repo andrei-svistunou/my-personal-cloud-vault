@@ -21,7 +21,7 @@ export interface Resource {
   user_id: string;
 }
 
-export const useResources = (folderId?: string) => {
+export const useResources = (folderId?: string, showDeleted: boolean = false) => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -59,7 +59,7 @@ export const useResources = (folderId?: string) => {
           `)
           .eq('folder_id', folderId)
           .eq('resources.user_id', user.id)
-          .eq('resources.is_deleted', false);
+          .eq('resources.is_deleted', showDeleted);
       } else {
         // Fetch all resources not in any folder (resources with no entries in resource_folders)
         const { data: resourcesInFolders } = await supabase
@@ -72,7 +72,7 @@ export const useResources = (folderId?: string) => {
           .from('resources')
           .select('*')
           .eq('user_id', user.id)
-          .eq('is_deleted', false)
+          .eq('is_deleted', showDeleted)
           .not('id', 'in', `(${resourceIdsInFolders.length > 0 ? resourceIdsInFolders.join(',') : 'null'})`)
           .order('created_at', { ascending: false });
       }
@@ -144,14 +144,62 @@ export const useResources = (folderId?: string) => {
 
       setResources(prev => prev.filter(r => r.id !== resourceId));
       toast({
-        title: "File deleted",
+        title: "File moved to trash",
         description: "The file has been moved to trash",
       });
     } catch (error) {
       console.error('Error deleting resource:', error);
       toast({
         title: "Error",
-        description: "Failed to delete file",
+        description: "Failed to move file to trash",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const restoreResource = async (resourceId: string) => {
+    try {
+      const { error } = await supabase
+        .from('resources')
+        .update({ is_deleted: false, deleted_at: null })
+        .eq('id', resourceId);
+
+      if (error) throw error;
+
+      setResources(prev => prev.filter(r => r.id !== resourceId));
+      toast({
+        title: "File restored",
+        description: "The file has been restored from trash",
+      });
+    } catch (error) {
+      console.error('Error restoring resource:', error);
+      toast({
+        title: "Error",
+        description: "Failed to restore file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const permanentlyDeleteResource = async (resourceId: string) => {
+    try {
+      const { error } = await supabase
+        .from('resources')
+        .delete()
+        .eq('id', resourceId);
+
+      if (error) throw error;
+
+      setResources(prev => prev.filter(r => r.id !== resourceId));
+      toast({
+        title: "File permanently deleted",
+        description: "The file has been permanently deleted",
+      });
+    } catch (error) {
+      console.error('Error permanently deleting resource:', error);
+      toast({
+        title: "Error",
+        description: "Failed to permanently delete file",
         variant: "destructive",
       });
     }
@@ -159,7 +207,7 @@ export const useResources = (folderId?: string) => {
 
   useEffect(() => {
     fetchResources();
-  }, [user, folderId]);
+  }, [user, folderId, showDeleted]);
 
   return {
     resources,
@@ -167,5 +215,7 @@ export const useResources = (folderId?: string) => {
     refetch: fetchResources,
     toggleFavorite,
     deleteResource,
+    restoreResource,
+    permanentlyDeleteResource,
   };
 };

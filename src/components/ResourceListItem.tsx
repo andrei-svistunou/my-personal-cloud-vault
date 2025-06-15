@@ -19,8 +19,10 @@ interface ResourceListItemProps {
   onPreview: (resource: Resource, e?: React.MouseEvent) => void;
   onToggleFavorite: (resourceId: string) => void;
   onDelete: (resourceId: string) => void;
+  onRestore?: (resourceId: string) => void;
   formatFileSize: (size: string) => string;
   formatDate: (date: string) => string;
+  isTrashView?: boolean;
 }
 
 const ResourceListItem = ({
@@ -29,8 +31,10 @@ const ResourceListItem = ({
   onPreview,
   onToggleFavorite,
   onDelete,
+  onRestore,
   formatFileSize,
   formatDate,
+  isTrashView = false,
 }: ResourceListItemProps) => {
   return (
     <div
@@ -55,7 +59,7 @@ const ResourceListItem = ({
       </div>
 
       <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        {resource.isFavorite && (
+        {!isTrashView && resource.isFavorite && (
           <Star className="h-4 w-4 text-yellow-400 fill-current" />
         )}
         
@@ -64,7 +68,9 @@ const ResourceListItem = ({
           onPreview={onPreview}
           onToggleFavorite={onToggleFavorite}
           onDelete={onDelete}
+          onRestore={onRestore}
           variant="list"
+          isTrashView={isTrashView}
         />
       </div>
     </div>
